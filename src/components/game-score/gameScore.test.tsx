@@ -4,7 +4,7 @@ import {Game} from "../../interfaces";
 
 describe('Game score component tests', () => {
 
-    const exampleGame: Game = {home: 'Home', away: 'Away', score: {homeScore: 0, awayScore: 1}};
+    const exampleGame: Game = {id: 1, home: 'Home', away: 'Away', score: {homeScore: 0, awayScore: 1}};
 
     it('shows the team names', () => {
         render(<GameScore game={exampleGame}/>);
