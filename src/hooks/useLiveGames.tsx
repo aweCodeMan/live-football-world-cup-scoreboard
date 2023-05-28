@@ -16,9 +16,9 @@ export function useLiveGames() {
 
             if (game) {
                 prevState.splice(games.indexOf(game), 1);
-
-                return [...prevState];
             }
+
+            return [...prevState];
         });
     }
 

@@ -44,6 +44,16 @@ describe('Live games hook tests', () => {
         expect(result.current[0].length).toBe(0);
     });
 
+    it('handles finishing a game that does not exist', () => {
+        const {result} = renderHook(() => useLiveGames());
+
+        act(() => {
+            result.current[1].finishGame(1);
+        })
+
+        expect(result.current[0].length).toBe(0);
+    });
+
     it('the games are ordered by their total score', () => {
         //  The games with the same total score will be returned ordered by the most recently started match in the scoreboard
         const {result} = renderHook(() => useLiveGames());
