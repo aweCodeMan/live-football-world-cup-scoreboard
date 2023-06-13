@@ -1,5 +1,6 @@
 import {act, renderHook} from '@testing-library/react';
 import {useLiveGames} from "./useLiveGames.tsx";
+import {CardColor, Team} from "../interfaces";
 
 describe('Live games hook tests', () => {
 
@@ -19,6 +20,67 @@ describe('Live games hook tests', () => {
 
         expect(result.current[0].length).toBe(1);
         expect(result.current[0][0].id).toBe(1);
+    });
+
+    it('does not update the score if it\'s not incrementally updated', async () => {
+        const {result} = renderHook(() => useLiveGames());
+
+        act(() => {
+            result.current[1].addGame({id: 1, home: 'Home', away: 'Away', score: {homeScore: 0, awayScore: 0}});
+            result.current[1].updateGame(1, {homeScore: 2, awayScore: 2})
+        });
+
+        expect(result.current[0][0].score.awayScore).toBe(0);
+        expect(result.current[0][0].score.homeScore).toBe(0);
+
+        act(() => {
+            result.current[1].updateGame(1, {homeScore: 1, awayScore: 0})
+        });
+
+        expect(result.current[0][0].score.awayScore).toBe(0);
+        expect(result.current[0][0].score.homeScore).toBe(1);
+    });
+
+    it('does not update if it\'s a non-existing game', async () => {
+        const {result} = renderHook(() => useLiveGames());
+
+        act(() => {
+            result.current[1].updateGame(1, {homeScore: 1, awayScore: 0})
+        });
+
+        expect(result.current[0].length).toBe(0);
+    });
+
+    it('updates only cards', async () => {
+        const {result} = renderHook(() => useLiveGames());
+
+        act(() => {
+            result.current[1].addGame({id: 1, home: 'Home', away: 'Away', score: {homeScore: 0, awayScore: 0}});
+            result.current[1].updateGame(1, {homeScore: 0, awayScore: 0}, [], [{
+                time: '10',
+                team: Team.AWAY,
+                player: 'John Doe',
+                cardColor: CardColor.YELLOW
+            }]);
+        });
+
+        expect(result.current[0][0].cards.length).toBe(1);
+    });
+
+    it('updates only goals', async () => {
+        const {result} = renderHook(() => useLiveGames());
+
+        act(() => {
+            result.current[1].addGame({id: 1, home: 'Home', away: 'Away', score: {homeScore: 0, awayScore: 0}});
+            result.current[1].updateGame(1, {homeScore: 0, awayScore: 0}, [{
+                time: '10',
+                team: Team.AWAY,
+                scorer: 'John Doe'
+            }]);
+        });
+
+        console.log(result.current[0][0]);
+        expect(result.current[0][0].goals.length).toBe(1);
     });
 
     it('can update the score of a game', () => {
@@ -84,6 +146,7 @@ describe('Live games hook tests', () => {
 
         //  Game 4 should be at the beginning, as it has the biggest total score
         act(() => {
+            result.current[1].updateGame(4, {homeScore: 0, awayScore: 1});
             result.current[1].updateGame(4, {homeScore: 1, awayScore: 1});
         })
 
@@ -91,6 +154,9 @@ describe('Live games hook tests', () => {
 
         //  Game 1 should be at the beginning, as it has the biggest total score
         act(() => {
+            result.current[1].updateGame(1, {homeScore: 0, awayScore: 1});
+            result.current[1].updateGame(1, {homeScore: 0, awayScore: 2});
+            result.current[1].updateGame(1, {homeScore: 1, awayScore: 2});
             result.current[1].updateGame(1, {homeScore: 2, awayScore: 2});
         })
 
@@ -105,7 +171,8 @@ describe('Live games hook tests', () => {
             result.current[1].addGame({id: 2, home: 'Spain', away: 'Brazil', score: {homeScore: 10, awayScore: 2}});
             result.current[1].addGame({id: 3, home: 'Germany', away: 'France', score: {homeScore: 2, awayScore: 2}});
             result.current[1].addGame({id: 4, home: 'Uruguay', away: 'Italy', score: {homeScore: 6, awayScore: 6}});
-            result.current[1].addGame({id: 5, home: 'Argentina', away: 'Australia', score: {homeScore: 3, awayScore: 1}
+            result.current[1].addGame({
+                id: 5, home: 'Argentina', away: 'Australia', score: {homeScore: 3, awayScore: 1}
             });
         })
 
